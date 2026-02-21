@@ -103,8 +103,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     createdAt: params.id === "new" ? new Date() : undefined,
   };
 
-  console.log(data);
-
   const rule =
     params.id === "new"
       ? await db.gwpRule.create({
@@ -336,8 +334,6 @@ export default function GwpRuleForm() {
                   onInput={(e) => {
                     const value = (e.target as unknown as { value: string })
                       .value;
-                    console.log(value);
-
                     setFormState({ ...formState, startAt: value });
                   }}
                 ></s-date-field>
@@ -349,8 +345,6 @@ export default function GwpRuleForm() {
                   onChange={(e) => {
                     const value = (e.target as unknown as { value: string })
                       .value;
-                    console.log(value);
-
                     setFormState({ ...formState, endAt: value });
                   }}
                 ></s-date-field>
