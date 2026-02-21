@@ -13,6 +13,7 @@ export type SupplementedGwpRule = GwpRule &
         variantTitle: string;
         variantImage: string;
         variantImageAlt: string;
+        productId: string;
       }
   );
 
@@ -43,47 +44,93 @@ async function supplementGwpRule(
   rule: GwpRule,
   graphql: AdminApiContext["graphql"],
 ) {
-  try {
-    const response = await graphql(
-      `
-        query supplementGwpRule($variantId: ID!) {
-          productVariant(id: $variantId) {
-            title
-            media(first: 1) {
-              nodes {
-                preview {
-                  image {
-                    url
-                    altText
-                  }
+  const response = await graphql(
+    `
+      query supplementGwpRule($variantId: ID!) {
+        productVariant(id: $variantId) {
+          title
+          product {
+            id
+          }
+          media(first: 1) {
+            nodes {
+              preview {
+                image {
+                  url
+                  altText
                 }
               }
             }
           }
         }
-      `,
-      {
-        variables: {
-          variantId: rule.giftVariantId,
-        },
+      }
+    `,
+    {
+      variables: {
+        variantId: rule.giftVariantId,
       },
-    );
+    },
+  );
 
-    const res: { data?: { productVariant: ProductVariant } } =
-      await response.json();
+  const res: { data?: { productVariant: ProductVariant } } =
+    await response.json();
 
-    const variant = res.data?.productVariant;
+  const variant = res.data?.productVariant;
 
-    return {
-      ...rule,
-      variantDeleted: !variant?.title,
-      variantTitle: variant?.title,
-      variantImage: variant?.image?.originalSrc,
-      variantImageAlt: variant?.image?.altText,
-    };
-  } catch (error) {
-    console.log(error);
-  }
+  return {
+    ...rule,
+    variantDeleted: !variant?.title,
+    productId: variant?.product.id,
+    variantTitle: variant?.title,
+    variantImage: variant?.image?.originalSrc,
+    variantImageAlt: variant?.image?.altText,
+  };
+}
+
+export async function syncGwpMetafield(graphql: AdminApiContext["graphql"]) {
+  const rules = await db.gwpRule.findMany({
+    orderBy: { id: "desc" },
+  });
+
+  const shopResponse = await graphql(`
+    query {
+      shop {
+        id
+      }
+    }
+  `);
+
+  const shopData = await shopResponse.json();
+  const shopId = shopData.data.shop.id;
+
+  await graphql(
+    `
+      mutation SetMetafield($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `,
+    {
+      variables: {
+        metafields: [
+          {
+            namespace: "gwp",
+            key: "rules",
+            type: "json",
+            value: JSON.stringify(rules),
+            ownerId: shopId,
+          },
+        ],
+      },
+    },
+  );
 }
 
 export type GwpRuleInputParams = {
@@ -116,114 +163,3 @@ export function validateRuleInput(data: GwpRuleInputParams) {
     return errors;
   }
 }
-
-/**
- * GiftWithPurchaseDiscount model
- * Handles creating automatic BXGY discounts for gift with purchase promotions
- */
-
-// type CreateGiftWithPurchaseDiscountParams = {
-//   thresholdAmount: string;
-//   giftProductGid: string;
-//   startsAt: string;
-//   endsAt?: string | null;
-// };
-
-// type CreateGiftWithPurchaseDiscountResponse = {
-//   automaticDiscountNode: {
-//     id: string;
-//     automaticDiscount: {
-//       __typename: string;
-//       title: string;
-//       startsAt: string;
-//       endsAt: string | null;
-//     };
-//   };
-//   userErrors: Array<{
-//     field: string[];
-//     message: string;
-//   }>;
-// };
-
-// /**
-//  * Creates an automatic "spend X, get Y free" discount via Admin GraphQL.
-//  *
-//  * @param graphql - The GraphQL admin API function
-//  * @param params - Discount creation parameters
-//  * @returns The created discount node and any user errors
-//  */
-// export async function createGiftWithPurchaseDiscount(
-//   graphql: any,
-//   {
-//     thresholdAmount,
-//     giftProductGid,
-//     startsAt,
-//     endsAt = null,
-//   }: CreateGiftWithPurchaseDiscountParams,
-// ): Promise<CreateGiftWithPurchaseDiscountResponse> {
-//   const mutation = `
-//     #graphql
-//     mutation CreateGiftWithPurchaseDiscount($automaticBxgyDiscount: DiscountAutomaticBxgyInput!) {
-//       discountAutomaticBxgyCreate(automaticBxgyDiscount: $automaticBxgyDiscount) {
-//         automaticDiscountNode {
-//           id
-//           automaticDiscount {
-//             __typename
-//             ... on DiscountAutomaticBxgy {
-//               title
-//               startsAt
-//               endsAt
-//             }
-//           }
-//         }
-//         userErrors {
-//           field
-//           message
-//         }
-//       }
-//     }
-//   `;
-
-//   const variables = {
-//     automaticBxgyDiscount: {
-//       title: "Spend RM100, Get Free Gift",
-//       startsAt,
-//       endsAt,
-//       customerBuys: {
-//         isOneTimePurchase: true,
-//         isSubscription: false,
-//         items: null,
-//         value: {
-//           amount: thresholdAmount,
-//         },
-//       },
-//       customerGets: {
-//         appliesOnOneTimePurchase: true,
-//         appliesOnSubscription: false,
-//         items: {
-//           products: {
-//             productsToAdd: [giftProductGid],
-//           },
-//         },
-//         value: {
-//           discountOnQuantity: {
-//             quantity: "1",
-//             effect: {
-//               percentage: 1,
-//             },
-//           },
-//         },
-//       },
-//       usesPerOrderLimit: "1",
-//     },
-//   };
-
-//   const response = await graphql(mutation, { variables });
-//   const { data, errors } = await response.json();
-
-//   if (errors) {
-//     throw new Error(`GraphQL error: ${JSON.stringify(errors)}`);
-//   }
-
-//   return data.discountAutomaticBxgyCreate;
-// }

@@ -17,7 +17,11 @@ import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 import db from "../db.server";
-import { getGwpRule, validateRuleInput } from "../models/GWPRule.server";
+import {
+  getGwpRule,
+  syncGwpMetafield,
+  validateRuleInput,
+} from "../models/GWPRule.server";
 
 type FormState = {
   id: number | null;
@@ -63,11 +67,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     startAt: rule.startAt.toISOString().split("T")[0],
     endAt: rule.endAt ? rule.endAt.toISOString().split("T")[0] : "",
     isActive: rule.isActive,
+
+    giftProductId: rule.productId,
+    variantTitle: rule.variantTitle,
+    variantImage: rule.variantImage,
   } as FormState;
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  // const { session } = await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request);
 
   const formData = await request.formData();
   const formObject = Object.fromEntries(formData) as Record<string, unknown>;
@@ -113,7 +121,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
           data: data as Parameters<typeof db.gwpRule.update>[0]["data"],
         });
 
-  return redirect(`/app/gwp-rule/${rule.id}`);
+  await syncGwpMetafield(admin.graphql);
+
+  return redirect(`/app/gwp-rules/${rule.id}`);
 }
 
 export default function GwpRuleForm() {
@@ -141,8 +151,8 @@ export default function GwpRuleForm() {
         ...formState,
         giftProductId: product.id,
         giftVariantId: id,
-        giftVariantTitle: title,
-        giftVariantImage: image?.originalSrc,
+        variantTitle: title,
+        variantImage: image?.originalSrc,
       });
     }
   }
@@ -282,15 +292,15 @@ export default function GwpRuleForm() {
                           inlineSize="38px"
                           blockSize="38px"
                         >
-                          {formState.giftVariantImage ? (
-                            <s-image src={formState.giftVariantImage}></s-image>
+                          {formState.variantImage ? (
+                            <s-image src={formState.variantImage}></s-image>
                           ) : (
                             <s-icon size="base" type="product" />
                           )}
                         </s-box>
                       </s-clickable>
                       <s-link href={variantUrl} target="_blank">
-                        {formState.giftVariantTitle}
+                        {formState.variantTitle}
                       </s-link>
                     </s-stack>
                     <s-stack direction="inline" gap="small">
