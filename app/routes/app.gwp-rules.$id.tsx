@@ -63,7 +63,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     id: rule.id,
     name: rule.name,
     giftVariantId: rule.giftVariantId,
-    purchaseThreshold: String(rule.purchaseThreshold),
+    purchaseThreshold: (rule.purchaseThreshold / 100).toFixed(2),
     startAt: rule.startAt.toISOString().split("T")[0],
     endAt: rule.endAt ? rule.endAt.toISOString().split("T")[0] : "",
     isActive: rule.isActive,
@@ -101,10 +101,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
     });
   }
 
+  const purchaseThresholdRaw = String(formObject.purchaseThreshold || "0");
+  const purchaseThresholdCents = Math.round(Number(purchaseThresholdRaw) * 100);
+
   const data = {
     name: String(formObject.name),
     giftVariantId: String(formObject.giftVariantId),
-    purchaseThreshold: Number(formObject.purchaseThreshold),
+    purchaseThreshold: purchaseThresholdCents,
     startAt: new Date(String(formObject.startAt)),
     endAt: formObject.endAt ? new Date(String(formObject.endAt)) : null,
     isActive: formObject.isActive === "true",
@@ -323,10 +326,11 @@ export default function GwpRuleForm() {
               </s-stack>
               <s-stack direction="inline" gap="base">
                 <s-number-field
-                  label="Minimum Purchase Amount (MYR)"
+                  label="Minimum Purchase Amount (MYR, to two-decimal places)"
                   error={errors.purchaseThreshold}
                   name="purchaseThreshold"
                   value={formState.purchaseThreshold}
+                  step={0.01}
                   onInput={(e) => {
                     const value = (e.target as unknown as { value: string })
                       .value;

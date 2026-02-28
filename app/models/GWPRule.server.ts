@@ -35,6 +35,8 @@ export async function getGwpRules(graphql: AdminApiContext["graphql"]) {
     orderBy: { id: "desc" },
   });
 
+  console.log(rules);
+
   if (rules.length === 0) return [];
 
   return Promise.all(rules.map((rule) => supplementGwpRule(rule, graphql)));
@@ -136,7 +138,7 @@ export async function syncGwpMetafield(graphql: AdminApiContext["graphql"]) {
 export type GwpRuleInputParams = {
   name: string;
   giftVariantId: string;
-  purchaseThreshold: number;
+  purchaseThreshold: number; // in cents
   startAt: Date;
 };
 

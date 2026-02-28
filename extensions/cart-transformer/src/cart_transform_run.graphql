@@ -1,0 +1,37 @@
+# query CartTransformRunInput {
+#   cart {
+#     lines {
+#       id
+#       quantity
+#     }
+#   }
+# }
+
+query CartTransformRunInput {
+  cart {
+    lines {
+      id
+      quantity
+      cost {
+        totalAmount {
+          amount
+          currencyCode
+        }
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+          title
+        }
+      }
+    }
+  }
+
+  shop {
+    gwpRules: metafield(namespace: "gwp", key: "rules") {
+      type
+      value
+    }
+  }
+}
