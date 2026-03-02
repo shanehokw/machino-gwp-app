@@ -13,6 +13,7 @@ const NO_CHANGES: CartTransformRunResult = {
 export function cartTransformRun(
   input: CartTransformRunInput,
 ): CartTransformRunResult {
+  console.log(input);
   const cartLines = input.cart.lines;
 
   let subtotal = 0;
@@ -20,6 +21,8 @@ export function cartTransformRun(
     const amount = line.cost.totalAmount.amount;
     subtotal += parseFloat(amount);
   }
+
+  console.log(subtotal);
 
   const applicableRules = getApplicableRules(input, subtotal);
 

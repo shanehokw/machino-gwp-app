@@ -35,8 +35,6 @@ export async function getGwpRules(graphql: AdminApiContext["graphql"]) {
     orderBy: { id: "desc" },
   });
 
-  console.log(rules);
-
   if (rules.length === 0) return [];
 
   return Promise.all(rules.map((rule) => supplementGwpRule(rule, graphql)));
