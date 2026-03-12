@@ -2,7 +2,7 @@
 
 client_id = "e6f7b8ea83cf0eefe111a6b72f0d50fd"
 name = "GWP"
-application_url = "https://machino-gwp-app.vercel.app/"
+application_url = "https://example.com"
 embedded = true
 
 [build]
