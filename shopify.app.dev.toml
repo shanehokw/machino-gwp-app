@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "e6f7b8ea83cf0eefe111a6b72f0d50fd"
-name = "GWP"
+client_id = "18874e1a01c066d6aabd1ef23e632940"
+name = "GWP - Dev"
 application_url = "https://example.com"
 embedded = true
 
@@ -21,7 +21,7 @@ api_version = "2026-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,unauthenticated_read_product_listings"
+scopes = "read_cart_transforms,write_cart_transforms,read_all_cart_transforms,read_products,unauthenticated_read_product_listings"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
