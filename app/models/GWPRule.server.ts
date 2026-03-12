@@ -131,6 +131,76 @@ export async function syncGwpMetafield(graphql: AdminApiContext["graphql"]) {
       },
     },
   );
+
+  await setPublicAccessonGwpMetafield(graphql);
+}
+
+async function setPublicAccessonGwpMetafield(
+  graphql: AdminApiContext["graphql"],
+) {
+  // await graphql(
+  //   `
+  //     mutation MetafieldDefinitionSetStorefrontAccess(
+  //       $definition: MetafieldDefinitionUpdateInput!
+  //     ) {
+  //       metafieldDefinitionUpdate(definition: $definition) {
+  //         updatedDefinition {
+  //           id
+  //           namespace
+  //           key
+  //           access {
+  //             storefront
+  //           }
+  //         }
+  //         userErrors {
+  //           field
+  //           message
+  //           code
+  //         }
+  //       }
+  //     }
+  //   `,
+  //   {
+  //     variables: {
+  //       definition: {
+  //         namespace: "gwp",
+  //         key: "rules",
+  //         ownerType: "SHOP",
+  //         access: {
+  //           storefront: "PUBLIC_READ",
+  //         },
+  //       },
+  //     },
+  //   },
+  // );
+
+  await graphql(`
+    mutation CreateProductMetafieldDefinition {
+      metafieldDefinitionCreate(
+        definition: {
+          namespace: "gwp"
+          key: "rules"
+          name: "GWP Rules"
+          type: "json"
+          ownerType: SHOP
+          access: { storefront: PUBLIC_READ }
+        }
+      ) {
+        createdDefinition {
+          id
+          namespace
+          key
+          access {
+            storefront
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `);
 }
 
 export type GwpRuleInputParams = {

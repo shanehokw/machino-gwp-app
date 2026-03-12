@@ -142,13 +142,16 @@ export default function GwpRuleForm() {
     JSON.stringify(formState) !== JSON.stringify(initialFormState);
 
   async function selectVariant() {
-    const variants = await window.shopify.resourcePicker({
-      type: "variant",
+    const products = await window.shopify.resourcePicker({
+      type: "product",
       action: "select",
     });
 
-    if (variants) {
-      const { id, title, image, product } = variants[0];
+    if (products) {
+      const variant = products[0].variants[0];
+
+      const product = products[0];
+      const { id, title, image } = variant;
 
       setFormState({
         ...formState,
