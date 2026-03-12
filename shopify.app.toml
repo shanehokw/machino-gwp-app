@@ -2,7 +2,7 @@
 
 client_id = "e6f7b8ea83cf0eefe111a6b72f0d50fd"
 name = "GWP"
-application_url = "https://example.com"
+application_url = "https://machino-gwp-app.vercel.app/"
 embedded = true
 
 [build]
@@ -13,11 +13,11 @@ api_version = "2026-01"
 
   [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
+  uri = "https://machino-gwp-app.vercel.app/webhooks/app/scopes_update"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
+  uri = "https://machino-gwp-app.vercel.app/webhooks/app/uninstalled"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
