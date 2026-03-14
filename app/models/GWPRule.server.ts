@@ -138,42 +138,6 @@ export async function syncGwpMetafield(graphql: AdminApiContext["graphql"]) {
 async function setPublicAccessonGwpMetafield(
   graphql: AdminApiContext["graphql"],
 ) {
-  // await graphql(
-  //   `
-  //     mutation MetafieldDefinitionSetStorefrontAccess(
-  //       $definition: MetafieldDefinitionUpdateInput!
-  //     ) {
-  //       metafieldDefinitionUpdate(definition: $definition) {
-  //         updatedDefinition {
-  //           id
-  //           namespace
-  //           key
-  //           access {
-  //             storefront
-  //           }
-  //         }
-  //         userErrors {
-  //           field
-  //           message
-  //           code
-  //         }
-  //       }
-  //     }
-  //   `,
-  //   {
-  //     variables: {
-  //       definition: {
-  //         namespace: "gwp",
-  //         key: "rules",
-  //         ownerType: "SHOP",
-  //         access: {
-  //           storefront: "PUBLIC_READ",
-  //         },
-  //       },
-  //     },
-  //   },
-  // );
-
   await graphql(`
     mutation CreateProductMetafieldDefinition {
       metafieldDefinitionCreate(
@@ -201,6 +165,46 @@ async function setPublicAccessonGwpMetafield(
       }
     }
   `);
+}
+
+export async function createStorefrontAccessToken(
+  graphql: AdminApiContext["graphql"],
+) {
+  const response = await graphql(
+    `
+      mutation StorefrontAccessTokenCreate(
+        $input: StorefrontAccessTokenInput!
+      ) {
+        storefrontAccessTokenCreate(input: $input) {
+          userErrors {
+            field
+            message
+          }
+          shop {
+            id
+          }
+          storefrontAccessToken {
+            accessScopes {
+              handle
+            }
+            accessToken
+            title
+          }
+        }
+      }
+    `,
+    {
+      variables: {
+        input: {
+          title: "Production Storefront Access Token",
+        },
+      },
+    },
+  );
+
+  const res = await response.json();
+
+  console.log("NEW TOKEN CREATED: ", JSON.stringify(res, null, 2));
 }
 
 export type GwpRuleInputParams = {

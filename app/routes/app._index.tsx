@@ -3,11 +3,17 @@ import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 import { authenticate } from "../shopify.server";
-import { getGwpRules, SupplementedGwpRule } from "../models/GWPRule.server";
+import {
+  createStorefrontAccessToken,
+  getGwpRules,
+  SupplementedGwpRule,
+} from "../models/GWPRule.server";
 
 export async function loader({ request }: { request: Request }) {
   const { admin, session } = await authenticate.admin(request);
   const rules = await getGwpRules(admin.graphql);
+
+  await createStorefrontAccessToken(admin.graphql);
 
   return {
     rules,
