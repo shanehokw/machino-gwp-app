@@ -13,7 +13,7 @@ export async function loader({ request }: { request: Request }) {
   const { admin, session } = await authenticate.admin(request);
   const rules = await getGwpRules(admin.graphql);
 
-  await createStorefrontAccessToken(admin.graphql);
+  // await createStorefrontAccessToken(admin.graphql);
 
   return {
     rules,
